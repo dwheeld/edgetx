@@ -212,6 +212,15 @@
   #define RADIO_TOOLS
 #endif
 
+#if defined(ROTARY_ENCODER_NAVIGATION)
+enum RotaryEncoderMode {
+  ROTARY_ENCODER_MODE_NORMAL,
+  ROTARY_ENCODER_MODE_INVERT_BOTH,
+  ROTARY_ENCODER_MODE_INVERT_VERT_HORZ_NORM,
+  ROTARY_ENCODER_MODE_INVERT_VERT_HORZ_ALT
+};
+#endif
+
 // RESX range is used for internal calculation; The menu says -100.0 to 100.0; internally it is -1024 to 1024 to allow some optimizations
 #define RESX_SHIFT 10
 #define RESX       1024
@@ -904,6 +913,10 @@ constexpr uint8_t SD_SCREEN_FILE_LENGTH = 64;
 
 constexpr uint8_t TEXT_FILENAME_MAXLEN = 40;
 
+#if defined(GHOST)
+  #include "telemetry/ghost_menu.h"
+#endif
+
 union ReusableBuffer
 {
   struct {
@@ -966,13 +979,14 @@ union ReusableBuffer
     char id[27];
   } version;
 
-  // moduleOptions, receiverOptions, radioVersion
-  PXX2HardwareAndSettings hardwareAndSettings;
+  PXX2HardwareAndSettings hardwareAndSettings; // radio_version
 
   struct {
     ModuleInformation modules[NUM_MODULES];
-    uint8_t linesCount;
     char msg[64];
+#if !defined(COLORLCD)
+    uint8_t linesCount;
+#endif
   } radioTools;
 
   struct {
@@ -981,6 +995,9 @@ union ReusableBuffer
 
   struct {
     uint8_t stickMode;
+#if defined(ROTARY_ENCODER_NAVIGATION)
+    uint8_t rotaryEncoderMode;
+#endif
   } generalSettings;
 
   struct {

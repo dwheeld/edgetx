@@ -37,6 +37,7 @@
 #endif
 
 #if defined(CROSSFIRE)
+#include "telemetry/crossfire.h"
 #include "crossfire_settings.h"
 #endif
 
@@ -73,6 +74,7 @@ class ModuleWindow : public FormGroup
 
   ModuleOptions* modOpts = nullptr;
   ChannelRange* chRange = nullptr;
+  Window *rxID = nullptr;
   TextButton *bindButton = nullptr;
   TextButton *rangeButton = nullptr;
   TextButton *registerButton = nullptr;
@@ -140,6 +142,7 @@ void ModuleWindow::updateModule()
 
   modOpts = nullptr;
   chRange = nullptr;
+  rxID = nullptr;
   bindButton = nullptr;
   rangeButton = nullptr;
   registerButton = nullptr;
@@ -190,19 +193,20 @@ void ModuleWindow::updateModule()
     box->setFlexLayout(LV_FLEX_FLOW_ROW);
 
     // Model index
-    if (isModuleModelIndexAvailable(moduleIdx)) {
-      auto modelId = &g_model.header.modelId[moduleIdx];
-      new NumberEdit(box, rect_t{}, 0, getMaxRxNum(moduleIdx),
-                     GET_DEFAULT(*modelId), [=](int32_t newValue) {
-                       if (newValue != *modelId) {
-                         *modelId = newValue;
-                         if (isModuleCrossfire(moduleIdx)) {
-                           moduleState[moduleIdx].counter = CRSF_FRAME_MODELID;
-                         }
-                         SET_DIRTY();
-                       }
-                     });
-    }
+    auto modelId = &g_model.header.modelId[moduleIdx];
+    rxID = new NumberEdit(box, rect_t{}, 0, getMaxRxNum(moduleIdx),
+                          GET_DEFAULT(*modelId), [=](int32_t newValue) {
+                            if (newValue != *modelId) {
+                              *modelId = newValue;
+#if defined(CROSSFIRE)
+                              if (isModuleCrossfire(moduleIdx)) {
+                                moduleState[moduleIdx].counter =
+                                    CRSF_FRAME_MODELID;
+                              }
+#endif
+                              SET_DIRTY();
+                            }
+                          });
 
     if (isModuleBindRangeAvailable(moduleIdx)) {
       bindButton = new TextButton(box, rect_t{},STR_MODULE_BIND);
@@ -396,6 +400,15 @@ void ModuleWindow::updateSubType()
 {
   if (modOpts) modOpts->update();
   if (chRange) chRange->update();
+
+  if (rxID) {
+    if (isModuleModelIndexAvailable(moduleIdx)) {
+      lv_obj_clear_flag(rxID->getLvObj(), LV_OBJ_FLAG_HIDDEN);
+    } else {
+      lv_obj_add_flag(rxID->getLvObj(), LV_OBJ_FLAG_HIDDEN);
+    }
+  }
+
   if (fsLine) {
     if (isModuleFailsafeAvailable(moduleIdx)) {
       lv_obj_clear_flag(fsLine->getLvObj(), LV_OBJ_FLAG_HIDDEN);
@@ -465,8 +478,7 @@ void ModuleSubTypeChoice::update()
   ModuleData* md = &g_model.moduleData[moduleIdx];
 
   if (isModuleXJT(moduleIdx)) {
-
-    setMin(MODULE_SUBTYPE_PXX1_OFF);
+    setMin(MODULE_SUBTYPE_PXX1_ACCST_D16);
     setMax(MODULE_SUBTYPE_PXX1_LAST);
     setValues(STR_XJT_ACCST_RF_PROTOCOLS);
     setGetValueHandler(GET_DEFAULT(md->subType));
@@ -476,8 +488,7 @@ void ModuleSubTypeChoice::update()
       md->channelsCount = defaultModuleChannels_M8(moduleIdx);
       SET_DIRTY();
     });
-    setAvailableHandler(
-        [](int index) { return index != MODULE_SUBTYPE_PXX1_OFF; });
+    setAvailableHandler(nullptr);
   }
   else if (isModuleDSM2(moduleIdx)) {
     setMin(DSM2_PROTO_LP45);
@@ -513,13 +524,22 @@ void ModuleSubTypeChoice::update()
     setGetValueHandler(GET_DEFAULT(md->subType));
     setSetValueHandler(SET_DEFAULT(md->subType));
 
+#if defined(PCBNV14) && !defined(SIMU)
     if (moduleIdx == INTERNAL_MODULE) {
-      md->subType = FLYSKY_SUBTYPE_AFHDS2A;
-      setAvailableHandler([](int v) { return v == FLYSKY_SUBTYPE_AFHDS2A; });
-    } else {
-      md->subType = FLYSKY_SUBTYPE_AFHDS3;
-      setAvailableHandler([](int v) { return v == FLYSKY_SUBTYPE_AFHDS3; });
+      if (hardwareOptions.pcbrev == PCBREV_NV14) {
+        md->subType = FLYSKY_SUBTYPE_AFHDS2A;
+        setAvailableHandler([](int v) { return v == FLYSKY_SUBTYPE_AFHDS2A; });
+      } else {
+        md->subType = FLYSKY_SUBTYPE_AFHDS3;
+        setAvailableHandler([](int v) { return v == FLYSKY_SUBTYPE_AFHDS3; });
+      }
     }
+#elif !defined(SIMU)
+    md->subType = FLYSKY_SUBTYPE_AFHDS3;
+    setAvailableHandler([](int v) { return v == FLYSKY_SUBTYPE_AFHDS3; });
+#else
+    setAvailableHandler(nullptr);
+#endif
   }
 #endif
 #if defined(MULTIMODULE)
@@ -566,6 +586,7 @@ void ModuleSubTypeChoice::update()
 
 void ModuleSubTypeChoice::openMenu()
 {
+#if defined(MULTIMODULE)
   if (isModuleMultimodule(moduleIdx)) {
     auto menu = new Menu(this);
 
@@ -587,7 +608,9 @@ void ModuleSubTypeChoice::openMenu()
     ModuleData* md = &g_model.moduleData[moduleIdx];
     int idx = protos->getIndex(md->multi.rfProtocol);
     if (idx >= 0) menu->select(idx);
-  } else {
+  } else
+#endif
+  {
     Choice::openMenu();
   }
 }

@@ -19,31 +19,29 @@
  * GNU General Public License for more details.
  */
 
-#ifndef PULSES_AFHDS2_H_
-#define PULSES_AFHDS2_H_
+#pragma once
 
 #include <inttypes.h>
-#include <functional>
-#include <map>
-#include <list>
 
-#include "hal/serial_driver.h"
-#include "hal/module_driver.h"
+constexpr uint8_t GHST_MENU_LINES = 6;
+constexpr uint8_t GHST_MENU_CHARS = 20;
 
-#define AFHDS2_PERIOD (2 * 1000) /* us */
+// GHST_DL_MENU_DESC (27 bytes)
+struct GhostMenuFrame
+{
+  uint8_t address;
+  uint8_t length ;
+  uint8_t packetId;
+  uint8_t menuStatus;    // GhostMenuStatus
+  uint8_t lineFlags;     // GhostLineFlags
+  uint8_t lineIndex;     // 0 = first line
+  unsigned char menuText[GHST_MENU_CHARS];
+  uint8_t crc;
+};
 
-struct FlySkySerialPulsesData {
-  uint8_t  pulses[64];
-  uint8_t  * ptr;
-  uint8_t  frame_index;
-  uint8_t  crc;
-  uint8_t  state;
-  uint8_t  timeout;
-  uint8_t  esc_state;
-} __attribute__((__packed__));
-
-
-extern const etx_serial_init afhds2SerialInitParams;
-extern const etx_module_driver_t Afhds2InternalDriver;
-
-#endif /* PULSES_AFHDS2_H_ */
+struct GhostMenuData {
+  uint8_t menuStatus;    // Update Line, Clear Menu, etc.
+  uint8_t lineFlags;     // Carat states, Inverse, Bold for each of Menu Label, and Value
+  uint8_t splitLine;     // Store beginning of Value substring
+  char menuText[GHST_MENU_CHARS + 1];
+};

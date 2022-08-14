@@ -1326,7 +1326,7 @@
   #define LED_BLUE_GPIO_PIN             GPIO_Pin_5  // PC.05
   #define LED_GREEN_GPIO                GPIOB
   #define LED_GREEN_GPIO_PIN            GPIO_Pin_1  // PB.01
-#elif defined(RADIO_ZORRO) || defined(RADIO_TX12MK2)
+#elif defined(RADIO_ZORRO)
   #define STATUS_LEDS
   #define GPIO_LED_GPIO_ON              GPIO_SetBits
   #define GPIO_LED_GPIO_OFF             GPIO_ResetBits
@@ -1336,6 +1336,16 @@
   #define LED_RED_GPIO_PIN              GPIO_Pin_13 // PE.13
   #define LED_BLUE_GPIO                 GPIOE
   #define LED_BLUE_GPIO_PIN             GPIO_Pin_2  // PE.02
+#elif defined(RADIO_TX12MK2)
+  #define STATUS_LEDS
+  #define GPIO_LED_GPIO_ON              GPIO_SetBits
+  #define GPIO_LED_GPIO_OFF             GPIO_ResetBits
+  #define LED_GREEN_GPIO                GPIOE
+  #define LED_GREEN_GPIO_PIN            GPIO_Pin_2  // PE.02
+  #define LED_RED_GPIO                  GPIOE
+  #define LED_RED_GPIO_PIN              GPIO_Pin_13 // PE.13
+  #define LED_BLUE_GPIO                 GPIOA
+  #define LED_BLUE_GPIO_PIN             GPIO_Pin_7  // PA.07
 #elif defined(PCBX7)
   #define STATUS_LEDS
   #define GPIO_LED_GPIO_ON              GPIO_SetBits
@@ -1478,6 +1488,9 @@
   #define INTMODULE_DMA_STREAM_IRQHandler  DMA2_Stream7_IRQHandler
   #define INTMODULE_DMA_FLAG_TC         DMA_IT_TCIF7
   #define INTMODULE_DMA_CHANNEL         DMA_Channel_4
+  #define INTMODULE_RX_DMA              DMA2
+  #define INTMODULE_RX_DMA_STREAM       LL_DMA_STREAM_2
+  #define INTMODULE_RX_DMA_CHANNEL      LL_DMA_CHANNEL_4
   #define INTMODULE_BOOTCMD_GPIO        GPIOB
   #define INTMODULE_BOOTCMD_GPIO_PIN    GPIO_Pin_1  // PB.01
   #define INIT_INTMODULE_BOOTCMD_PIN()  GPIO_ResetBits(INTMODULE_BOOTCMD_GPIO, INTMODULE_BOOTCMD_GPIO_PIN);
@@ -1518,11 +1531,19 @@
   // #define INTMODULE_DMA                   NULL
   // #define INTMODULE_DMA_CHANNEL           0
   // #define INTMODULE_DMA_STREAM            0
-#if defined(RADIO_TLITE)
-  #define INTMODULE_BOOTCMD_GPIO          GPIOA
-  #define INTMODULE_BOOTCMD_GPIO_PIN      GPIO_Pin_5  // PA.05
-  #define INIT_INTMODULE_BOOTCMD_PIN()    GPIO_ResetBits(INTMODULE_BOOTCMD_GPIO, INTMODULE_BOOTCMD_GPIO_PIN);
-#endif
+  // TODO: RX DMA seems to be buggy together with passthrough
+  // #define INTMODULE_RX_DMA                DMA1
+  // #define INTMODULE_RX_DMA_STREAM         LL_DMA_STREAM_1
+  // #define INTMODULE_RX_DMA_CHANNEL        LL_DMA_CHANNEL_4
+  #if defined(RADIO_TLITE)
+    #define INTMODULE_BOOTCMD_GPIO          GPIOA
+    #define INTMODULE_BOOTCMD_GPIO_PIN      GPIO_Pin_5  // PA.05
+    #define INIT_INTMODULE_BOOTCMD_PIN()    GPIO_ResetBits(INTMODULE_BOOTCMD_GPIO, INTMODULE_BOOTCMD_GPIO_PIN);
+  #elif defined(RADIO_TPRO)
+    #define INTMODULE_BOOTCMD_GPIO          GPIOF
+    #define INTMODULE_BOOTCMD_GPIO_PIN      GPIO_Pin_11  // PF.11
+    #define INIT_INTMODULE_BOOTCMD_PIN()    GPIO_ResetBits(INTMODULE_BOOTCMD_GPIO, INTMODULE_BOOTCMD_GPIO_PIN);
+  #endif
 #else
   #define INTMODULE_PULSES
   #define INTMODULE_RCC_AHB1Periph      (RCC_AHB1Periph_GPIOA | RCC_AHB1Periph_GPIOD | RCC_AHB1Periph_DMA2)

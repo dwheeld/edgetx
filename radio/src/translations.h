@@ -118,6 +118,7 @@ extern const char* STR_VTRIMINC[];
 extern const char* STR_VDISPLAYTRIMS[];
 extern const char* STR_RETA123[];
 
+extern const char* STR_TIMER_DIR[];
 
 extern const char* STR_VBLMODE[];
 extern const char* STR_VCURVEFUNC[];
@@ -136,6 +137,8 @@ extern const char* STR_VSWASHTYPE[];
 extern const char* STR_VKEYS[];
 extern const char* STR_VSWITCHES[];
 extern const char* STR_VSRCRAW[];
+
+extern const char* STR_ROTARY_ENC_OPT[];
 
 #if defined(TRANSLATIONS_CZ)
 extern const char* STR_INPUTNAMES[];
@@ -675,6 +678,7 @@ extern const char STR_SCRIPT_KILLED[];
 extern const char STR_SCRIPT_ERROR[];
 extern const char STR_PLAY_FILE[];
 extern const char STR_ASSIGN_BITMAP[];
+extern const char STR_LIMITS_HEADERS_DIRECTION[];
 #if defined(COLORLCD)
 extern const char STR_ASSIGN_SPLASH[];
 extern const char STR_FIRST_CHANNEL[];
@@ -725,7 +729,7 @@ extern const char STR_GLOBAL_VAR[];
 extern const char STR_OWN[];
 extern const char STR_DATE[];
 extern const char STR_ROTARY_ENCODER[];
-extern const char STR_INVERT_ROTARY[];
+extern const char STR_ROTARY_ENC_MODE[];
 extern const char STR_CHANNELS_MONITOR[];
 extern const char STR_MIXERS_MONITOR[];
 extern const char STR_PATH_TOO_LONG[];
